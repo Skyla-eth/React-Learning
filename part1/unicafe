@@ -1,0 +1,69 @@
+import React, { useState } from 'react'
+
+const Title = (props) => {
+  return (
+    <h1>{props.title}</h1>
+  )
+}
+
+const Button = ({ func, text }) => {
+  return (
+    <button onClick = {func}>
+      {text}
+    </button>
+  )
+}
+
+const StatisticLine = ({ text, value }) => {
+  return (
+    <p>{text} {value}</p>
+  )
+}
+
+const Statistics = ({good, neutral, bad}) => {
+
+  const all = good + neutral + bad
+  const average = (good - bad) / all
+  const positive = good / all * 100
+
+  if(all === 0) {
+    return (
+      <p>No feedback given</p>
+    )
+  }
+
+  return (
+    <>
+      <StatisticLine text = 'good' value = {good} />
+      <StatisticLine text = 'neutral' value = {neutral} />
+      <StatisticLine text = 'bad' value = {bad} />
+      <StatisticLine text = 'all' value = {all} />
+      <StatisticLine text = 'average' value = {average} />
+      <StatisticLine text = 'positive' value = {positive} />
+    </>
+  )
+}
+
+const App = () => {
+  // save clicks of each button to own state
+  const [good, setGood] = useState(0)
+  const [neutral, setNeutral] = useState(0)
+  const [bad, setBad] = useState(0)
+
+  const Good = () => setGood(good + 1)
+  const Neutral = () => setNeutral(neutral + 1)
+  const Bad = () => setBad(bad + 1)
+
+  return (
+    <div>
+      <Title title = {'give feedback'} />
+      <Button func = {Good} text = "good" />
+      <Button func = {Neutral} text = "neutral" />
+      <Button func = {Bad} text = "bad" />
+      <Title title = {'statistics'} />
+      <Statistics good = {good} neutral = {neutral} bad = {bad} />
+    </div>
+  )
+}
+
+export default App
