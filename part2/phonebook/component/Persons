@@ -1,15 +1,15 @@
-import React from "react"
-import Person from "./Person"
+import React from 'react'
+import Person from './Person'
 
 const Persons = (props) => {
     return (
         <div>
             <ul>
-                {props.persons&&props.persons.map(person => person.name.toUpperCase().includes(props.newSearch.toUpperCase())).map(person => (
-                <Person key={person.id} name={person.name} number={person.number} /> ))}
+                {props.persons.filter(person => person.name.toUpperCase().includes(props.newSearch.toUpperCase())).map(person => (
+                <Person key={person.id} name={person.name} number={person.number} deletePerson = {props.handleDeleteName(person.name, person.id)} /> ))}
             </ul>
         </div>
-    )
+    ) 
 }
 
 export default Persons
