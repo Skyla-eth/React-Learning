@@ -3,12 +3,48 @@ import FilterPerson from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
 import personService from './service/persons'
+import Notification from './components/Notification'
 
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newSearch, setNewSearch] = useState('')
+  const [errorMessage, setErrorMessage] = useState('some error')
+
+  const handleNameChange = (event) => {
+    setNewName(event.target.value)
+  }
+
+  const handleNumberChange = (event) => {
+    setNewNumber(event.target.value)
+  }
+
+  const handleNameSearch = (event) => {
+    setNewSearch(event.target.value)
+  }
+
+  const handleDeleteName = (name, id) => {
+    return () => {
+      if(window.confirm(`Delete ${name}?`)) {
+        personService
+          .deletePerson(id)
+          .then(() => {
+            setPersons(persons.filter(person => person.id !== id ))
+            setErrorMessage(`Delete ${name}`)
+            setNewName('')
+            setNewNumber('')
+          })
+          .catch(error => {
+            setPersons(persons.filter(person => person.name !== name ))
+            setErrorMessage(`${name} has been deleted from the server`)
+          })
+        setTimeout(() => {
+          setErrorMessage(null)
+        },3000)
+      }
+    }
+  }
 
   useEffect(() => {
     personService
@@ -26,37 +62,51 @@ const App = () => {
       id: Math.floor(Math.random()*101)
     }
 
-    if(persons.includes(personObject) === true) {
-      window.alert(`${newName} is already added to phone`)
-    } else {
-      personService
-      .create(personObject)
-      .then(returnedPerson => {
-        setPersons(persons.concat(returnedPerson))
-        setNewName('')
-        setNewNumber('')
-      })
-      .catch(error => {
-        console.log(error.response.data)
-      })
-    }
-  }
-
-  const handleNameChange = (event) => {
-    setNewName(event.target.value)
-  }
-
-  const handleNumberChange = (event) => {
-    setNewNumber(event.target.value)
-  }
-
-  const handleNameSearch = (event) => {
-    setNewSearch(event.target.value)
+    if(
+      persons.filter(person => person.name === personObject.name).length > 0
+      ) {
+      if(
+        window.confirm(`${newName} is already added to phone`)
+        ) {
+            const previousPerson = persons.find(person => person.name === newName)
+            personService
+              .update(previousPerson.id, {...previousPerson, number: newNumber})
+              .then(returnedPerson => {
+                setPersons(persons.map(person => person.name !== newName ? person : returnedPerson))
+              })
+              .catch(error => {
+                console.log(error)
+                setErrorMessage('update failed')
+              })
+            setPersons(persons.concat(personObject))
+            setErrorMessage('number changed')
+            setNewName('')
+            setNewNumber('')
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 3000)
+          }
+        } else {
+            personService
+              .create(personObject)
+              .then(returnedPerson => {
+              setPersons(persons.concat(returnedPerson))
+              setNewName('')
+              setNewNumber('')
+              })
+              .catch(error => {
+                console.log(error.response.data)
+              })
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 3000)
+          }
   }
 
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={errorMessage} />
       <FilterPerson newSearch = {newSearch} handleNameSearch = {handleNameSearch} />
       <h2>add a new</h2>
       <PersonForm 
@@ -66,7 +116,10 @@ const App = () => {
       newNumber = {newNumber}
       handleNumberChange = {handleNumberChange} />
       <h2>Numbers</h2>
-      <Persons persons = {persons} newSearch = {newSearch} />
+      <Persons 
+        persons = {persons} 
+        newSearch = {newSearch}
+        handleDeleteName = {handleDeleteName} />
     </div>
   )
 }
