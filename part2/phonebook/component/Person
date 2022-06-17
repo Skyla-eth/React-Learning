@@ -5,6 +5,7 @@ const Person = (props) => {
         <div>
             <li>
                 {props.name} {props.number}
+                <button onClick={props.deletePerson}>delete</button>
             </li>
         </div>
     )
